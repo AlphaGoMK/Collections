@@ -1,3 +1,5 @@
 # FileSharing
 
-![git tips](https://github.com/AlphaGoMK/FileSharing/blob/master/Snipaste_2018-04-13_00-15-51.jpg)
+![git tips](https://github.com/AlphaGoMK/FileSharing/blob/master/Fig/Git.jpg)  
+![markdown1](https://github.com/AlphaGoMK/FileSharing/blob/master/Fig/Markdown1.png)  
+![markdown2](https://github.com/AlphaGoMK/FileSharing/blob/master/Fig/Markdown2.png)  
