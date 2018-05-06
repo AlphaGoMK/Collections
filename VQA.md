@@ -11,3 +11,20 @@
     * saliency maps
     * combine saliency weighted representations
     * global context as reference
+  
+### Hierarchical Question-Image Co-Attention for Visual Question Answering
+
+* Motivation:
+  1. introduce question attention
+  2. hierarchical reasoning
+* Model:  
+  1. Word-level feature -- CNN max-pooling \(uni/bi/trigram\) -- \> phrase level -- LSTM encoding -- \> question level
+  2. Co-Attention Parallel:
+    * connect image-question pair's feature similarity = \> affinity matrix
+    * affinity as feature to predict attention maps
+  3. Co-Attention Alternating:
+    * question to vec
+    * question summary attention on image feature repre.
+    * image feature attention on question repre.
+    
+  4. Encode recursively using MLP, predict from 3 level.
