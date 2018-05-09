@@ -1,5 +1,5 @@
 # Squeeze-and-Excitation Networks
-[arXiv](https://www.arxiv.org/pdf/1709.01507)
+[arXiv](https://www.arxiv.org/pdf/1709.01507.pdf)  
 卷积核：空间维度信息，特征维度信息聚集  
 空间spatial：inception(multiscale)，inside-outside(context)  
 SENet->特征维度,feature channel  
