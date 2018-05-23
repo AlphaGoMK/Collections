@@ -29,4 +29,5 @@
 6. <img src="https://latex.codecogs.com/gif.latex?\inline&space;z_i=tanh(\bold{W_c}c^{(i)}&plus;\bold{b_c}))" title="z_i=tanh(\bold{W_c}c^{(i)}+\bold{b_c}))" />  
 7. z_i refer to feature at each location i  
 8. z_i^T * z_i == constant  
-9. \alpha_i as attention weight  
+9. u_w learned vec for attention  
+10. \alpha for softmax
