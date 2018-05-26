@@ -1,4 +1,4 @@
-# VGA  
+# VQA  
 ### Instance-aware Image and Sentence Matching with Selective Multimodal LSTM
 
 * Motivation:  
