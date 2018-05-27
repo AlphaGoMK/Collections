@@ -31,6 +31,8 @@
 8. z_i^T * z_i == constant  
 9. u_w learned vec for attention  
 10. \alpha for softmax
+11. get weight: u ([feature map], [batch X seqlen X inputsize]) matmul ones(input size) , mul along seq_len
+12. attention mul: atten apply to rnn output, get [batch X inputsize] tensor, seq(window part) weight
 
 ### Analysis
 * remove attention mechanism drops 0.9% --> attention decide relative weights of modules (different contribution of textual content)
