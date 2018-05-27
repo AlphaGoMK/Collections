@@ -4,7 +4,8 @@
 两张图 correlation
 相同的texture，临近相同texture
 pipeline
-￼
+￼Network Architecture
+![architecture](https://github.com/AlphaGoMK/FileSharing/blob/master/Fig/geonet.jpg)
 1. 刚性物体结构
 2. 非刚性运动情况
 network
