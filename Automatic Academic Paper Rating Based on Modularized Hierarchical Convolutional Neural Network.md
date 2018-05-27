@@ -31,3 +31,9 @@
 8. z_i^T * z_i == constant  
 9. u_w learned vec for attention  
 10. \alpha for softmax
+
+### Analysis
+* remove attention mechanism drops 0.9% --> attention decide relative weights of modules (different contribution of textual content)
+* remove module drops 6.4% --> 
+* remove paper module:  
+  author > conclusion > abstract > method (high variance in papers, model may not capture unified internal pattern) > title
