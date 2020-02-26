@@ -1,5 +1,8 @@
-# FileSharing
+![tiktok](Notes/Figures/Tiktok_AlphaGoMK.png)
 
-![git tips](https://github.com/AlphaGoMK/FileSharing/blob/master/Fig/Git.jpg)  
-![markdown1](https://github.com/AlphaGoMK/FileSharing/blob/master/Fig/Markdown1.png)  
-![markdown2](https://github.com/AlphaGoMK/FileSharing/blob/master/Fig/Markdown2.png)  
+# Collections
+
+Anything you want.
+![markdown1](Notes/Figures/Markdown1.png)  
+![markdown2](Notes/Figures/Markdown2.png)  
+
