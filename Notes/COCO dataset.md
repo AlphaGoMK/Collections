@@ -44,6 +44,7 @@ loadImgs   - Load imgs with the specified ids.
 annToMask  - Convert segmentation in an annotation to binary mask.
 showAnns   - Display the specified annotations.
 loadRes    - Load algorithm results and create API for accessing them.
+showBBox	 - Display detection bbox results
 download   - Download COCO images from mscoco.org server.
 ```
 
@@ -51,15 +52,20 @@ demo: https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoDemo.ip
 我的改进:[GitHub - AlphaGoMK/cocoapi: COCO API - Dataset @ http://cocodataset.org/](https://github.com/AlphaGoMK/cocoapi)
 增加`showBBox(anns)`方法，输入anns参数为 _Result format_ 格式的dict，或者是标注格式
 
+可视化demo: https://github.com/AlphaGoMK/cocoapi/blob/master/PythonAPI/pycocoVisDemo.ipynb
+
 - - - -
 
 ### Submission
 
 <u>**Result format**</u>     **JSON**
 
-```
-[{                                                                “image_id”: int,                                                 “category_id”: int,                                             
-“bbox”: [x, y, width, height],                                     “score”: float,                             
+```json
+[{                                                                
+	“image_id”: int,                                                 
+  “category_id”: int,                                             
+	“bbox”: [x, y, width, height],   // 左上xy, wh                                 
+  “score”: float,                             
 }]
 ```
 
@@ -71,7 +77,7 @@ demo: https://github.com/cocodataset/cocoapi/blob/master/PythonAPI/pycocoDemo.ip
 
 [alg]your algorithm name
 
-**压缩后提交**
+**压缩后提交，测试时json只提交test-dev的结果**
 
 提交地址：https://competitions.codalab.org/competitions/20794
 
