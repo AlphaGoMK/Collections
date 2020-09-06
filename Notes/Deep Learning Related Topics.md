@@ -15,6 +15,14 @@
 
 - - - -
 
+## 卷积大小
+
+$O=\lfloor\frac{W-F+2P}{S}\rfloor+1$
+
+**Dilated Conv**
+
+$O=\frac{W+2P-(d(k-1)+1)}{S}+1$
+
 ## MobileNet
 
 把传统卷积变成depth-wise卷积和1x1卷积
@@ -67,6 +75,10 @@ Ref: [A Tutorial on Filter Groups (Grouped Convolution) - A Shallow Blog about D
 ![](Figures/B747E511-B1B6-4CD8-9F8F-446708466A2B.png)
 👆a：normal，b：分组卷积，c：channel shuffle
 
+*另一种理解👇*
+
+![image-20200322164220501](Figures/image-20200322164220501.png)
+
 #### Channel shuffle
 
 👇<u>**展开，转置，平铺**</u>
@@ -79,7 +91,7 @@ Ref: [A Tutorial on Filter Groups (Grouped Convolution) - A Shallow Blog about D
 
 * 当输入通道数和输出通道数相同时，MAC最小
 * MAC与分组数量g成正比（谨慎使用分组卷积）
-* 网络的分支数量降低并行能力（卷积核加载和同步），单分支速度快
+* 网络的分支数量降低并行能力（卷积核加载和同步），单分支速度快--网络结构简单
   * ResNeXt准确率提升但是速度慢
 * Element-wise操作是非常耗时
 
@@ -112,18 +124,20 @@ Ref: [A Tutorial on Filter Groups (Grouped Convolution) - A Shallow Blog about D
 - - - -
 
 ## Squeeze-and-Excitation Networks
+
 [arXiv](https://www.arxiv.org/pdf/1709.01507.pdf)  
 卷积核：空间维度信息，特征维度信息聚集  
 空间spatial：inception(multiscale)，inside-outside(context)  
 SENet->特征维度,feature channel  
 Motivation:
+
 1. Explicitly model channel-interdependcies
 2. Feature recalibration: enhance useful, suppress less useful
 
 特征通道之间的关系：特征重标定（通过学习的方式来自动获取到每个特征通道的重要程度，然后依照这个重要程度去提升有用的特征并抑制对当前任务用处不大的特征）  
-Squeeze: global pooling, 顺着空间维度压缩，增加全局空间信息，每一个二维特征图变为一个实数。表示特征通道上全局分布，加上S模块使得靠近输入的层也可以获得全局感受野  
-Excitation: like gate in RNN. 每个通道生成权重，建模相关性，capture channel-wise dependencies  
-W的要求 * learn non-linear interaction * learn a non-mutually-exclusive relationship since we would like to ensure that multiple channels are allowed to be emphasised opposed to one-hot activation  
+Squeeze: global pooling, 顺着空间维度压缩，增加全局空间信息，每一个二维特征图变为一个实数。表示特征通道上全局分布，加上S模块使得靠近输入的层也可以获得全局感受野  
+Excitation: like gate in RNN. 每个通道生成权重，建模相关性，capture channel-wise dependencies  
+W的要求 * learn non-linear interaction * learn a non-mutually-exclusive relationship since we would like to ensure that multiple channels are allowed to be emphasised opposed to one-hot activation  
 Reweight: multiply with feature map  
 
 嵌入Inception：  
@@ -134,17 +148,17 @@ Reweight: multiply with feature map  
 ## Hard Negative Mining in SSD & Focal Loss
 
 1. Hard Negative Mining in SSD 作为中间结果处理的步骤。只有GT框/和GT框IoU大于阈值的才是正样本（即正确检测框，数量少），其他都是负样本（即错误的检测框，数量大）
-   
+
    > <u>**为了正负样本数量平衡**</u>，防止少量关键的（提升性能）的负样本被大量正样本掩盖而无法被学习/优化到。   
    > 解决错误样例太多，<u>**正确样例太少**</u>，掩盖正确样例的问题。  
-   
+
     **Hard Negative Mining in SSD**: 直接通过根据置信度损失，<u>**排序筛选**</u> 来选择分类损失最大的负样本（即不是物体但是有最高的分类置信度 -> 困难分类样本_迷惑性，丢弃不是物体但分类置信度相对较低 -> 简单_错误不严重/不明显），只保留分类置信度损失较大的，人为保证样本数量平衡。
 
 2. Focal Loss 用于损失函数中
-   
+
    > <u>**为了能学到困难样例**</u>，学到更多，不被简单掩盖。  
    > 解决错误样例中，<u>**简单的错误样例太多**</u>，困难错误样例太少，且求和后掩盖困难的错误样例，而导致检测器学不到困难的错误样例（真正需要学/优化的）。  
-   
+
     **Focal Loss**: 通过给不同置信度的样本<u>**增加权重**</u>的方法。接近0/1为简单样本，接近0.5为难样本。所以正例x (1-p)，负例x p，使用 _不确定程度_ 作为权重。难易的错误都会学，但困难的错误对loss影响更大。
     $L(p,y)=-(y\cdots (1-p)\cdots \log(p)+(1-y)\cdots p\cdots\log(1-p))$
 
@@ -153,6 +167,7 @@ Reweight: multiply with feature map  
 ## One-stage & Two-stage detector
 
 #### RCNN
+
 ![](Figures/6F235DE5-4774-4527-9FC9-F8EAF8252AEE.png)
 
 
@@ -187,15 +202,15 @@ $\mathcal{L}_{\mathrm{tri}}(\theta)=\sum_{a, p, n \atop y_{a}=y_{p} \neq y_{n}}\
 
 1. <u>**Batch-Hard**</u>
    <u>选择P个类别（人），每个类别K个样本（照片），PK个样本作为anchor</u> 。每个anchor只选择**距离最远的pos和距离最近的neg**（最hard）
-   
+
    $\mathcal{L}_{\mathrm{BH}}(\theta ; X)=\overbrace{\sum_{i=1}^{P} \sum_{a=1}^{K}}^{\text {all anchors}} \left[m +  \overbrace{\max_{p=1 \ldots K} D\left( f_{\theta}\left(x_{a}^{i}\right), f_{\theta}(x_p^i)\right)}^{\text {hardest positive}} - \underbrace{\min\limits_{j=1 \ldots P,\; n=1\ldots K \atop j \neq i} D\left(f_{\theta}\left(x_{a}^{i}\right), f_{\theta}\left(x_{n}^{j}\right)\right)}_{\text {hardest negative}}\right]_{+} $
    一共$P_K$个triplets
 
 2. <u>**Batch-All**</u>
    选择P个类别（人），每个类别K个样本（照片），PK个样本作为anchor，loss计算所有的pos和所有的neg（和baseline选法相同）
-   
+
    $\mathcal{L}_{\mathrm{BA}}(\theta ; X)= \overbrace{\sum_{i=1}^{P} \sum_{a=1}^{K}}^{\text {all anchors}} \overbrace{\sum_{p=1 \atop p \neq a}^{K}}^{\text{all pos.}} \overbrace{\sum_{j=1 \atop j \neq i}^{P} \sum_{n=1}^{K}}^{\text {all neg.}}\left[m+d_{j, a, n}^{i, a, p}\right]_{+}$
-   
+
    $d_{j, a, n}^{i, a, p}=D\left(f_{\theta}\left(x_{a}^{i}\right), f_{\theta}\left(x_{p}^{i}\right)\right)-D\left(f_{\theta}\left(x_{a}^{i}\right), f_{\theta}\left(x_{n}^{j}\right)\right)$
    $P_K$个anchor，每个有$K-1$的pos，$P_K-K$个neg（其他所有类别的样本）。一共$P_K(K-1)(P_K-K)$个triplets
 
@@ -341,7 +356,7 @@ NASNet迁移学习优化策略为Proximal Policy Optimization(PPO) 👈
 
 #### Training
 
-样本标注两个框。把产生的proposal`P={x,y,w,h}`和标注框`Q=(Full,Vis)`match，pos-proposal规则为`IoU(P,F)>thresh_1` && `C(P,V)>thresh_2`. C定义为👇$C(P,\bar{V})=\frac{\text {Area}(P\cap\bar{V})}{\text {Area}(\bar{V})}$
+<u>样本标注两个框 (vis/full)</u>。把产生的proposal`P={x,y,w,h}`和标注框`Q=(Full,Vis)`match，pos-proposal规则为`IoU(P,F)>thresh_1` && `C(P,V)>thresh_2`. C定义为👇$C(P,\bar{V})=\frac{\text {Area}(P\cap\bar{V})}{\text {Area}(\bar{V})}$
 
 训练样本`X=(Img, P, cate=1, F, V)`，regression target为👇
 $\bar{f}^x=\frac{\bar{F}^x-P^x}{P^W},\;\bar{f}^y=\frac{\bar{F}^y-P^y}{P^h}$
@@ -422,15 +437,39 @@ $L_{\mathrm{RepBox}}=\frac{\sum_{i \neq j} \operatorname{Smooth}_{l n}\left(\ope
 
 ![](Figures/2020-02-24-16-07-43-image.png)
 
+输入$X$， 输出$Y$，参数$\gamma$和$\beta$ (parameters, 每个特征图一对)
+
+$y_i=\gamma\cdot\frac{x_i-\mu}{\sigma}+\beta$
+
+Where $\mu=\frac{\sum_i^Nx_i}{N}$, $\sigma=\sqrt{\frac{\sum_I^N(x_i-\mu)^2}{N}+\epsilon}$ 均值和方差 (batch statistics)
+
+统计不同样本在同一个channel同一位置数据的均值方差 (reduce at batch dim hwc)
+
+反向传播时，由于均值和方差是输入的函数
+
+$\frac{d_{\ell}}{d_{x_{i}}}=\frac{d_{\ell}}{d_{y_{i}}} \cdot \frac{\partial_{y_{i}}}{\partial_{x_{i}}}+\frac{d_{\ell}}{d_{\mu}} \cdot \frac{d_{\mu}}{d_{x_{i}}}+\frac{d_{\ell}}{d_{\sigma}} \cdot \frac{d_{\sigma}}{d_{x_{i}}}$
+
+where $\frac{\partial_{y_{i}}}{\partial_{x_{i}}}=\frac{\gamma}{\sigma}$, $\frac{d_{\ell}}{d_{\mu}}=-\frac{\gamma}{\sigma}\sum_i^N\frac{d_{\ell}}{d_{y_{i}}}$, $\frac{d_{\sigma}}{d_{x_{i}}}=-\frac{1}{\sigma}(\frac{x_i\mu}{N})$
+
+![http://hangzh.com/blog/images/bn1.png](Figures/bn1.png)
+
+Ref: https://kevinzakka.github.io/2016/09/14/batch_normalization/
+
+[https://kiddie92.github.io/2019/03/06/卷积神经网络之Batch-Normalization（一）：How？](https://kiddie92.github.io/2019/03/06/卷积神经网络之Batch-Normalization（一）：How？/)
+
+[https://www.cnblogs.com/shine-lee/p/11989612.html](https://www.cnblogs.com/shine-lee/p/11989612.html#卷积层如何使用batchnorm？)
+
 #### Training
 
-Batch Norm对一个batch中所有样本的同一channel计算统计量，受batch_size影响
+==Batch Norm==对一个batch中所有样本的同一channel计算统计量，受batch_size影响
 
-Layer Norm对单个样本计算统计量，用于RNN
+==Layer Norm==对单个样本计算统计量，用于RNN
 
-Instance Norm单样本单通道计算，风格迁移
+==Instance Norm==单样本单通道计算，风格迁移
 
-Group Norm对通道分组，解决BN依赖batch_size的问题
+==Group Norm==对通道分组，解决BN依赖batch_size的问题
+
+> 同一层特征通道之间关联性强，特征具有相同分布，可以group
 
 Switchable Normalization计算BN、LN、IN三种的统计量，然后加权$w_k$作为SN的均值$\mu$和方差$\sigma$「解决batch_size影响，自适应不同任务」
 
@@ -449,6 +488,24 @@ $w_k=\frac{e^{\lambda_k}}{\sum_{z\in\{\text {bn,ln,in}\}}e^{\lambda_z}}$
 LN, IN正常计算，BN采用<u>batch average</u>方式，具体过程是，冻结所有的参数，从训练集中随机抽取一定数量的样本，计算SN的均值和方差，然后使用他们的平均值作为BN的统计值
 
 Ref: [https://zhuanlan.zhihu.com/p/39296570](https://zhuanlan.zhihu.com/p/39296570)
+
+### Sync BN
+
+> 多卡训练时，传统BN只在单GPU上归一化，改成多个GPU之间同步信息；性能明显提升
+
+通过计算均值和方差的中间量$\sum x$和$\sum x^2$，只需同步一次
+
+根据$D[x]=E[x^2]-E[x]^2$
+
+**FP** 计算均值和方差 $\mu=\frac{\sum x}{N}$, $\sigma=\sqrt{\frac{\sum x^2}{N}-\mu^2+\epsilon}$
+
+**BP** 计算$\frac{d_{\ell}}{d_{x_{i}}}$, $\frac{d_\ell}{d_{\sum_k x}}$和$\frac{d_\ell}{d_{\sum_k x^2}}$，都可以单卡上计算，只同步一次
+
+![http://hangzh.com/blog/images/bn3.png](Figures/bn3-20200319223355972.png)
+
+Ref: https://hangzhang.org/PyTorch-Encoding/notes/syncbn.html
+
+**Improvement**: MABN(移动平均+减少统计量+中心化权重) [https://arxiv.org/abs/2001.06838](https://link.zhihu.com/?target=https%3A//arxiv.org/abs/2001.06838)
 
 ---
 
@@ -483,3 +540,302 @@ improve feature rep. by adding adaptive contexts from global semantic pool
 源域用上述模块构建$\mathbf{P_S}$，构建$\mathbf{G_{S\to T}}$，GCN计算从源域到目标域迁移，concat源域特征
 
 ![](Figures/2020-02-25-22-03-19-image.png)
+
+---
+
+## Model-Agnostic Structured Sparsification with Learnable Channel Shuffle
+
+> 划分group，conv$\to$group conv，分组进行通道shuffle
+
+常见网络压缩方式 
+
+1. 量化权重weight quantization 
+
+   低精度表示，易性能下降
+
+2. 知识蒸馏knowledge distillation 
+
+   易受教师网络影响
+
+3. 网络剪枝network pruning
+
+   去掉部分unimportant网络参数 (eg. filter pruning algo.)
+
+参数weight norm来判断是否prune「L1正则化可增加sparsity」
+
+使用GroupConv使通道间稀疏连接
+
+使用learning-based通道shuffle增强inter-group info flow
+
+**步骤**：使用structured regularization训练大模型 $\to$ 将部分conv转为group conv $\to$ finetune恢复精度
+
+#### connectivity patterns
+
+卷积核权重值$W_{j,i}$认为input output channel之间关联性
+
+卷积**groupable**：权重可以排列成**block diagonal**
+
+👇一般conv的weights（channel之间关联程度）
+
+![image-20200226235116107](/Users/mk/Library/Application Support/typora-user-images/image-20200226235116107.png)
+
+👇groupable conv，一个channel只和同组内几个channel有高响应，即block diagonal（👇有两个block，cardinality=2，每个block中的对角块0惩罚，block中左下右上块0.5惩罚，block块外1惩罚，见下下图）
+
+![image-20200226235221529](/Users/mk/Library/Application Support/typora-user-images/image-20200226235221529.png)
+
+变为学习==划分channel==问题，损失函数惩罚左下右上没有被zero-out的权重，使用coordinate descent计算（线性规划问题，or optimal transport）
+
+#### Structured regularization
+
+![image-20200227000502981](/Users/mk/Library/Application Support/typora-user-images/image-20200227000502981.png)
+
+channel shuffle解释👇
+
+![image-20200227002933679](/Users/mk/Library/Application Support/typora-user-images/image-20200227002933679.png)
+
+## Cosine Learning rate decay
+
+1. warm up：训练开始将lr从0逐步增加到初始值
+2. decay：使用cosine函数
+
+![img](Figures/1*BJCssPOCn4u__NoAZs392w-20200228202856582.png)
+
+常见为step devay
+
+![stepdecay](Figures/stepdecay.png)
+
+Ref: https://medium.com/@scorrea92/cosine-learning-rate-decay-e8b50aa455b
+
+## Learning When and Where to Zoom with Deep Reinforcement Learning
+
+> 分类任务中学习如何缩放，spatially-sample
+
+**Attention**：<u>先LR</u>用saliency network产生attention map，然后<u>映射</u>到HR图片上使用
+
+![image-20200306005012796](Figures/image-20200306005012796.png)
+
+学习：根据LR图像决策sample哪些HR图像。sample成本和准确率tradeoff
+
+![image-20200306010155518](Figures/image-20200306010155518.png)
+
+1. 👆由LR图片通过policy network计算出需要zoom-in的grid
+2. 直接在HR上直接sample相应位置，构成path
+3. HR-patch和LR原图片(optional)输入分类网络分类
+4. 分类损失reward返回给policy network
+
+适用于遥感/高分辨率图片分类/检测(?)
+
+---
+
+### Jaccard distance
+
+衡量两个set之间的距离
+
+**Jaccard index**: $J(X,Y)=\frac{|X\cap Y|}{|X\cup Y|}$
+
+**Distance**: $D(X,Y)=1-J(X,Y)$
+
+Ref: https://www.statisticshowto.datasciencecentral.com/jaccard-index/
+
+---
+
+### Label Smoothing
+
+针对数据集中**错误标注**，使`[0, 1]`变成`[0.2, 0.8]`，减弱正样本的loss，冲淡错误信号的影响
+
+$new\_onehot\_labels = labels * (1 - label\_smoothing) + label\_smoothing * \frac{1}{|labels|}$
+
+$new\_label=[0\;1]\times(1-0.2)+0.2\times \frac{1}{2}=[0.1\;0.9]$
+
+> Large logit gaps combined with the bounded gradient will make the model less adaptive and too confident about its predictions.
+
+---
+
+## BiDet: An Efficient Binarized Object Detector
+
+> 二值神经网络，使用Information Bottleneck理论简化网络(作为一个损失函数)
+
+检测任务看作$X\to F\to L,C$，图片到特征到类别位置
+
+**Information Bottleneck理论**
+
+目标为$\min _{\phi_{b}, \phi_{d}} I(X ; F)-\beta I(F ; C, L)$
+
+最小化特征提取的互信息（信息增益，知道A对确定B的影响），最大化检测网络的互信息
+
+*互信息可以看作网络的信息损失，互信息大，信息损失大。前半部分为网络提取足够的特征，后半部分为只检测有效的框，去除冗余信息*
+
+**损失函数**：$\begin{aligned}
+&\min J=J_{1}+J_{2}\\
+&\begin{aligned}
+=&\left(\sum_{t, s} \log \frac{p\left(f_{s t} | \boldsymbol{x}\right)}{p\left(f_{s t}\right)}-\beta \sum_{i=1}^{b} \log \frac{p\left(c_{i} | \boldsymbol{f}\right) p\left(\boldsymbol{l}_{1, i} | \boldsymbol{f}\right) p\left(\boldsymbol{l}_{2, i} | \boldsymbol{f}\right)}{p\left(c_{i}\right) p\left(\boldsymbol{l}_{1, i}\right) p\left(\boldsymbol{l}_{2, i}\right)}\right) \\
+&-\gamma \cdot \frac{1}{m} \sum_{i=1}^{m} s_{i} \log s_{i}
+\end{aligned}
+\end{aligned}$
+
+其中$J_1$为IB理论的优化目标，类别多项式分布，位置正态分布，$p\left(f_{s t} | \boldsymbol{x}\right)$通过采样得到
+
+$J_2=-\gamma \cdot \frac{1}{m} \sum_{i=1}^{m} s_{i} \log s_{i}$为减少一张图中目标的自信息($s_i$为第i个物体的objectness)。把一张图的多个物体分为多个block，使$\sum^{m}_{i}s_i=1$目标conf和为1，减少目标数量/假阳性，即让一张图内不要有多个high objectness的物体，限制为只有少量物体「<u>适用于每张照片目标较少的数据集</u>」
+
+---
+
+## Mixup: Beyond Empirical Risk Minimization
+
+常见网络训练为**ERM**：训练数据为经验，记住所有样本，不能<u>泛化</u>
+
+数据增强可以理解为**VRM (vicinal risk minimization)**：领域风险最小化，构造数据集样本的领域值，学习领域的小变化，但方式<u>dataset-dependent&heuristic</u>
+
+提出利用线性插值产生新的标注样本对，混合到数据集中训练「增加有噪声的样本」
+
+$\tilde{x}=\lambda x_i+(1-\lambda)x_j$
+
+$\tilde{y}=\lambda y_i+(1-\lambda)y_j$
+
+其中$(x_i,y_i)$和$(x_j,y_j)$为数据集中「标注-样本」对，$\lambda\in [0,1]$
+
+---
+
+## Hybrid Task Cascade for Instance Segmentation
+
+> 实例分割，级联，mask和box同时采用cascade方式refine
+
+![image-20200321232008290](Figures/image-20200321232008290.png)
+
+👆级联refine，box和mask两个分支。接受上一stage回归后的box作为输入，预测新的mask和box
+
+![image-20200321232235092](Figures/image-20200321232235092.png)
+
+👆mask1是box1经过pool之后得到的，mask和box两个分支有交互，box$\to$mask
+
+![image-20200321232338714](Figures/image-20200321232338714.png)
+
+👆mask之间也进行信息交互
+
+![image-20200321232559233](Figures/image-20200321232559233.png)
+
+交互方式👆，上一个stage的mask经过`1x1` conv，然后和box_pool相加，上一个stage的mask和box共同产生下一个stage的mask
+
+![image-20200321232644137](Figures/image-20200321232644137.png)
+
+👆最后加入语义信息分支
+
+性能极强，速度慢👇
+
+![image-20200321232902678](Figures/image-20200321232902678.png)
+
+![image-20200321233013589](Figures/image-20200321233013589.png)
+
+---
+
+## 模型集成/集成学习
+
+多个弱学习器集成组合为更精确更鲁棒模型
+
+单个模型 或为高偏置（低自由度模型），或为高方差（高自由度模型）。根据弱学习器的性能选择集成方法，高偏置使用`compose`，高方差使用`average`
+
+![img](Figures/640.png)
+
+#### Bagging (bootstrap+aggregating)
+
+并行的独立学习多个同质弱学习器，目标为**减小方差**
+
+1. 使用bootstrap方法从源数据集取样N个数据集，计算统计量「置信度，representative samples」
+2. 使用N个数据集独立训练N个弱学习器
+3. 最终结果由N个模型的预测投票得到
+
+如：随机森林
+
+#### Boosting
+
+迭代的拟合模型，串行，目标为**减小偏置**
+
+1. 训练集成学习器
+2. reweight数据集「关注难样本」
+3. 加入新的弱学习器$s_{l}(.)=s_{l-1}(.)+c_{l} \times w_{l}(.)$ 「AdaBoost权重为$\arg\min\limits_{C_i} Error$ 性能越好贡献越大」
+
+![img](Figures/640-20200411154812850.png)
+
+如：AdaBoost，GBDT
+
+#### Stacking
+
+多个弱学习器堆叠，学习元模型将其组合「例如：KNN+Logistic-Reg+SVM，NN将其组合」
+
+1. 训练数据集分为两组
+2. 第一组训练拟合弱学习器
+3. 弱学习器在第二组上的预测，作为元模型的输入。在第二组数据集上拟合元模型
+
+![img](Figures/640-20200411155054069.png)
+
+Ref: https://www.jiqizhixin.com/articles/2019-05-15-15, https://zhuanlan.zhihu.com/p/27689464
+
+---
+
+## Improving Convolutional Networks with Self-Calibrated Convolutions (SC Conv / SCNet)
+
+> 在 Group Conv基础上改进卷积 heterogeneous
+>
+> 拆分为不规则的操作
+>
+> 增大感受野，大范围的context
+
+![image-20200512102143071](Figures/image-20200512102143071.png)
+
+首先把原始特征图<u>通道上</u>分为两部分 `Group Conv`
+
+$\mathbf{X_1}$为**Self-Calibration**分支，$\mathbf{X_2}$为卷积分支
+
+#### Self-Calibration
+
+分别在small scale的`latent`空间和large scale的`original`空间进行卷积操作，再融合`calibration`
+
+**Latent空间**：
+
+$\mathbf{T}_{1}=\operatorname{AvgPool}_{r}\left(\mathbf{X}_{1}\right)$ 下采样减小尺度
+
+$\mathbf{X}_{1}^{\prime}=\operatorname{Up}\left(\mathcal{F}_{2}\left(\mathbf{T}_{1}\right)\right)=\mathrm{Up}\left(\mathbf{T}_{1} * \mathbf{K}_{2}\right)$ 小尺度上卷积并upsample回原尺度
+
+**Original空间和latent空间融合**：$\mathbf{Y}_{1}^{\prime}=\mathcal{F}_{3}\left(\mathbf{X}_{1}\right) \cdot \sigma\left(\mathbf{X}_{1}+\mathbf{X}_{1}^{\prime}\right)$
+
+$\sigma$ for sigmoid function
+
+**Final output**：$\mathbf{Y}_{1}=\mathcal{F}_{4}\left(\mathbf{Y}_{1}^{\prime}\right)=\mathbf{Y}^{\prime} * \mathbf{K_4}$
+
+Self-calibration在小尺度操作，可以扩大感受野 (*Regional context*)，融合多尺度的信息
+
+![image-20200512103726329](Figures/image-20200512103726329.png)
+
+---
+
+## Strip Pooling: Rethinking Spatial Pooling for Scene Parsing
+
+> 带状pooling，各向异性特征，分割任务
+
+![image-20200530103440982](Figures/image-20200530103440982.png)
+
+长条形感受野，<font color=#FF0000 >行感受野</font>在每一行的所有列进行average，<u>压缩到1列</u>，pooling结果为列向量；<font color=#0000FF >列感受野</font>在每一列的所有行average，<u>压缩到一行</u>，pooling结果为行向量
+
+然后扩展成原图尺寸，再fusion
+
+对长条状物体又帮助，可以集合任意两个位置的dependency (long-range)
+
+![image-20200530104233646](Figures/image-20200530104233646.png)
+
+![image-20200530104306845](Figures/image-20200530104306845.png)
+
+---
+
+## Res2Net: A New Multi-scale Backbone Architecture
+
+> 多尺度卷积，通用，但速度有下降；基于ResNet，可用于ResNeXt
+
+将一个卷积分成不同深度的操作，获得不同尺度的空间/语义信息
+
+![image-20200530113431833](Figures/image-20200530113431833.png)
+
+相比ResNet，减少参数量提性能。同样GFLOPS，速度会慢，但精度更高；同样精度下，速度更快。
+
+![image-20200530113939005](Figures/image-20200530113939005.png)
+
+---
+

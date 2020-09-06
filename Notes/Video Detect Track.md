@@ -438,3 +438,10 @@ $x^i_k$ means instance i's location in k time, subject to $\hat{x}^i_k$, $\Sigma
 Use Mahalonobis Distance between observed location and predicted location to determine add to trajectory or not.
 $d^2=(\hat{x}^i_k-y^i_k)^T(\Sigma^i_k)^{-1}(\hat{x}^i_k-y^i_k)\leq threshold$
 threshold determine range the gating area.
+
+## Plug & Play Convolutional Regression Tracker for Video Object Detection
+
+Detector中加入light-weight tracker，使用detector提取的特征
+
+![image-20200304123522688](Figures/image-20200304123522688.png)
+
